@@ -1,0 +1,239 @@
+@property --angle-1 {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: -75deg;
+}
+
+:root {
+  --global--size: clamp(1rem, 2vw, 1.25rem);
+  --anim--hover-time: 400ms;
+  --anim--hover-ease: cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.select-wrap {
+  position: relative;
+  z-index: 2;
+  border-radius: 1em;
+  background: transparent;
+  max-width: 400px;
+  width: 100%;
+  transition: all var(--anim--hover-time) var(--anim--hover-ease);
+}
+
+.select-shadow {
+  --shadow-cuttoff-fix: 2em;
+  position: absolute;
+  width: calc(100% + var(--shadow-cuttoff-fix));
+  height: calc(100% + var(--shadow-cuttoff-fix));
+  top: calc(0% - var(--shadow-cuttoff-fix) / 2);
+  left: calc(0% - var(--shadow-cuttoff-fix) / 2);
+  filter: blur(clamp(2px, 0.125em, 12px));
+  -webkit-filter: blur(clamp(2px, 0.125em, 12px));
+  -moz-filter: blur(clamp(2px, 0.125em, 12px));
+  -ms-filter: blur(clamp(2px, 0.125em, 12px));
+  overflow: visible;
+  pointer-events: none;
+}
+
+.select-shadow::after {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  border-radius: 1em;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.1));
+  width: calc(100% - var(--shadow-cuttoff-fix) - 0.25em);
+  height: calc(100% - var(--shadow-cuttoff-fix) - 0.25em);
+  top: calc(var(--shadow-cuttoff-fix) - 0.5em);
+  left: calc(var(--shadow-cuttoff-fix) - 0.875em);
+  padding: 0.125em;
+  box-sizing: border-box;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  transition: all var(--anim--hover-time) var(--anim--hover-ease);
+  overflow: visible;
+  opacity: 1;
+}
+
+.select-container {
+  --border-width: clamp(1px, 0.0625em, 4px);
+  position: relative;
+  z-index: 3;
+  background: linear-gradient(
+    -75deg,
+    rgba(255, 255, 255, 0.05),
+    rgba(255, 255, 255, 0.2),
+    rgba(255, 255, 255, 0.05)
+  );
+  border-radius: 1em;
+  box-shadow: inset 0 0.125em 0.125em rgba(0, 0, 0, 0.05),
+    inset 0 -0.125em 0.125em rgba(255, 255, 255, 0.5),
+    0 0.25em 0.125em -0.125em rgba(0, 0, 0, 0.2),
+    0 0 0.1em 0.25em inset rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(clamp(1px, 0.125em, 4px));
+  -webkit-backdrop-filter: blur(clamp(1px, 0.125em, 4px));
+  -moz-backdrop-filter: blur(clamp(1px, 0.125em, 4px));
+  -ms-backdrop-filter: blur(clamp(1px, 0.125em, 4px));
+  transition: all var(--anim--hover-time) var(--anim--hover-ease);
+  cursor: pointer;
+}
+
+.select-container:hover {
+  backdrop-filter: blur(0.05em);
+  -webkit-backdrop-filter: blur(0.05em);
+  -moz-backdrop-filter: blur(0.05em);
+  -ms-backdrop-filter: blur(0.05em);
+  box-shadow: inset 0 0.125em 0.125em rgba(0, 0, 0, 0.05),
+    inset 0 -0.125em 0.125em rgba(255, 255, 255, 0.5),
+    0 0.15em 0.05em -0.1em rgba(0, 0, 0, 0.25),
+    0 0 0.05em 0.1em inset rgba(255, 255, 255, 0.5);
+}
+
+.select-display {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1em 1.5em;
+  font-family: "Inter", sans-serif;
+  font-weight: 400;
+  font-size: 1em;
+  color: rgba(50, 50, 50, 1);
+  text-shadow: 0em 0.05em 0.05em rgba(0, 0, 0, 0.1);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.select-arrow {
+  width: 0.75em;
+  height: 0.75em;
+  border-right: 2px solid rgba(50, 50, 50, 1);
+  border-bottom: 2px solid rgba(50, 50, 50, 1);
+  transform: rotate(45deg);
+  transition: transform 300ms var(--anim--hover-ease);
+}
+
+.select-container.open .select-arrow {
+  transform: rotate(-135deg);
+}
+
+.select-dropdown {
+  position: absolute;
+  top: calc(100% + 0.75em);
+  left: 0;
+  right: 0;
+  background: linear-gradient(
+    -75deg,
+    rgba(255, 255, 255, 0.1),
+    rgba(255, 255, 255, 0.3),
+    rgba(255, 255, 255, 0.1)
+  );
+  border-radius: 1em;
+  box-shadow: inset 0 0.125em 0.125em rgba(0, 0, 0, 0.05),
+    inset 0 -0.125em 0.125em rgba(255, 255, 255, 0.5),
+    0 0.5em 1em rgba(0, 0, 0, 0.2),
+    0 0 0.1em 0.25em inset rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(clamp(2px, 0.2em, 8px));
+  -webkit-backdrop-filter: blur(clamp(2px, 0.2em, 8px));
+  overflow: hidden;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-0.5em);
+  transition: all 250ms var(--anim--hover-ease);
+  z-index: 10;
+}
+
+.select-container.open .select-dropdown {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.select-option {
+  padding: 1em 1.5em;
+  font-family: "Inter", sans-serif;
+  font-weight: 400;
+  font-size: 1em;
+  color: rgba(50, 50, 50, 1);
+  text-shadow: 0em 0.05em 0.05em rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: all 150ms ease;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.select-option:hover {
+  background: rgba(100, 150, 255, 0.2);
+  color: rgba(30, 30, 30, 1);
+}
+
+.select-option.selected {
+  background: rgba(100, 150, 255, 0.15);
+  font-weight: 500;
+}
+
+.select-container::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  border-radius: 1em;
+  width: calc(100% + var(--border-width));
+  height: calc(100% + var(--border-width));
+  top: calc(0% - var(--border-width) / 2);
+  left: calc(0% - var(--border-width) / 2);
+  padding: var(--border-width);
+  box-sizing: border-box;
+  background: conic-gradient(
+      from var(--angle-1) at 50% 50%,
+      rgba(0, 0, 0, 0.5),
+      rgba(0, 0, 0, 0) 5% 40%,
+      rgba(0, 0, 0, 0.5) 50%,
+      rgba(0, 0, 0, 0) 60% 95%,
+      rgba(0, 0, 0, 0.5)
+    ),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5));
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  transition: all var(--anim--hover-time) var(--anim--hover-ease),
+    --angle-1 500ms ease;
+  box-shadow: inset 0 0 0 calc(var(--border-width) / 2) rgba(255, 255, 255, 0.5);
+  pointer-events: none;
+}
+
+.select-container:hover::after {
+  --angle-1: -125deg;
+}
+
+.select-wrap:hover .select-shadow {
+  filter: blur(clamp(2px, 0.0625em, 6px));
+  -webkit-filter: blur(clamp(2px, 0.0625em, 6px));
+  -moz-filter: blur(clamp(2px, 0.0625em, 6px));
+  -ms-filter: blur(clamp(2px, 0.0625em, 6px));
+}
+
+.select-wrap:hover .select-shadow::after {
+  top: calc(var(--shadow-cuttoff-fix) - 0.875em);
+  opacity: 1;
+}
+
+.label {
+  display: block;
+  margin-bottom: 0.5em;
+  font-family: "Inter", sans-serif;
+  font-weight: 500;
+  font-size: 0.875em;
+  color: rgba(60, 60, 60, 1);
+  text-shadow: 0 0.05em 0.05em rgba(0, 0, 0, 0.1);
+}
+
+.form-group {
+  width: 100%;
+  max-width: 400px;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .select-container::after,
+  .select-container:hover::after {
+    --angle-1: -75deg;
+  }
+}

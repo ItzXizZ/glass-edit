@@ -1,0 +1,347 @@
+@property --angle-1 {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: -75deg;
+}
+
+@property --angle-2 {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: -45deg;
+}
+
+:root {
+  --panel-anim-time: 400ms;
+  --panel-hover-ease: cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.chat-panel-wrap {
+  position: relative;
+  z-index: 2;
+  border-radius: 1.5em;
+  background: transparent;
+  width: 100%;
+  max-width: 600px;
+  height: 600px;
+  transition: all var(--panel-anim-time) var(--panel-hover-ease);
+}
+
+.chat-panel-shadow {
+  --shadow-cuttoff-fix: 2em;
+  position: absolute;
+  width: calc(100% + var(--shadow-cuttoff-fix));
+  height: calc(100% + var(--shadow-cuttoff-fix));
+  top: calc(0% - var(--shadow-cuttoff-fix) / 2);
+  left: calc(0% - var(--shadow-cuttoff-fix) / 2);
+  filter: blur(clamp(2px, 0.15em, 14px));
+  -webkit-filter: blur(clamp(2px, 0.15em, 14px));
+  -moz-filter: blur(clamp(2px, 0.15em, 14px));
+  -ms-filter: blur(clamp(2px, 0.15em, 14px));
+  overflow: visible;
+  pointer-events: none;
+}
+
+.chat-panel-shadow::after {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  border-radius: 1.5em;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.25), rgba(0, 0, 0, 0.12));
+  width: calc(100% - var(--shadow-cuttoff-fix) - 0.25em);
+  height: calc(100% - var(--shadow-cuttoff-fix) - 0.25em);
+  top: calc(var(--shadow-cuttoff-fix) - 0.5em);
+  left: calc(var(--shadow-cuttoff-fix) - 0.875em);
+  padding: 0.125em;
+  box-sizing: border-box;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  transition: all var(--panel-anim-time) var(--panel-hover-ease);
+  overflow: visible;
+  opacity: 1;
+}
+
+.chat-panel {
+  --border-width: clamp(1px, 0.0625em, 4px);
+  position: relative;
+  z-index: 3;
+  background: linear-gradient(
+    -75deg,
+    rgba(255, 255, 255, 0.06),
+    rgba(255, 255, 255, 0.22),
+    rgba(255, 255, 255, 0.06)
+  );
+  border-radius: 1.5em;
+  box-shadow: inset 0 0.125em 0.125em rgba(0, 0, 0, 0.05),
+    inset 0 -0.125em 0.125em rgba(255, 255, 255, 0.5),
+    0 0.3em 0.15em -0.15em rgba(0, 0, 0, 0.2),
+    0 0 0.1em 0.25em inset rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(clamp(1px, 0.15em, 6px));
+  -webkit-backdrop-filter: blur(clamp(1px, 0.15em, 6px));
+  -moz-backdrop-filter: blur(clamp(1px, 0.15em, 6px));
+  -ms-backdrop-filter: blur(clamp(1px, 0.15em, 6px));
+  transition: all var(--panel-anim-time) var(--panel-hover-ease);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-panel:hover {
+  box-shadow: inset 0 0.125em 0.125em rgba(0, 0, 0, 0.05),
+    inset 0 -0.125em 0.125em rgba(255, 255, 255, 0.5),
+    0 0.2em 0.1em -0.12em rgba(0, 0, 0, 0.25),
+    0 0 0.08em 0.15em inset rgba(255, 255, 255, 0.5);
+}
+
+.chat-panel-content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  font-family: "Inter", sans-serif;
+  font-weight: 400;
+  font-size: 1em;
+  line-height: 1.6;
+  color: rgba(50, 50, 50, 1);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-shadow: 0em 0.05em 0.05em rgba(0, 0, 0, 0.1);
+  transition: all var(--panel-anim-time) var(--panel-hover-ease);
+  height: 100%;
+  overflow: hidden;
+}
+
+.chat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5em 1.75em 1em;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  flex-shrink: 0;
+}
+
+.chat-title {
+  margin: 0;
+  font-size: 1.25em;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: rgba(40, 40, 40, 1);
+}
+
+.chat-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+}
+
+.status-dot {
+  width: 0.6em;
+  height: 0.6em;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #4ade80, #22c55e);
+  box-shadow: 0 0 0.5em rgba(74, 222, 128, 0.5),
+    inset 0 0.05em 0.1em rgba(255, 255, 255, 0.5);
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(0.95);
+  }
+}
+
+.status-text {
+  font-size: 0.85em;
+  color: rgba(60, 60, 60, 0.8);
+  font-weight: 500;
+}
+
+.chat-messages-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.5em 1.75em;
+  position: relative;
+}
+
+.chat-messages-container::-webkit-scrollbar {
+  width: 0.5em;
+}
+
+.chat-messages-container::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 1em;
+  margin: 0.5em 0;
+}
+
+.chat-messages-container::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.3),
+    rgba(255, 255, 255, 0.2)
+  );
+  border-radius: 1em;
+  box-shadow: inset 0 0.05em 0.1em rgba(0, 0, 0, 0.2);
+}
+
+.chat-messages-container::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.4),
+    rgba(255, 255, 255, 0.3)
+  );
+}
+
+.chat-messages {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 1em;
+}
+
+.empty-icon {
+  font-size: 3em;
+  opacity: 0.3;
+}
+
+.empty-text {
+  font-size: 0.95em;
+  color: rgba(80, 80, 80, 0.6);
+  text-align: center;
+  margin: 0;
+}
+
+.chat-input-area {
+  display: flex;
+  gap: 0.75em;
+  padding: 1em 1.75em 1.5em;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  flex-shrink: 0;
+  align-items: center;
+}
+
+.chat-input-wrap {
+  flex: 1;
+  margin: 0;
+}
+
+.chat-input {
+  width: 100%;
+  font-size: 0.95em;
+}
+
+.chat-send-btn {
+  flex-shrink: 0;
+}
+
+.chat-send-btn button {
+  padding: 0.75em 1.5em;
+  white-space: nowrap;
+}
+
+.chat-send-btn button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.chat-panel-content::after {
+  content: "";
+  display: block;
+  position: absolute;
+  z-index: 1;
+  width: calc(100% - var(--border-width));
+  height: calc(100% - var(--border-width));
+  top: calc(0% + var(--border-width) / 2);
+  left: calc(0% + var(--border-width) / 2);
+  box-sizing: border-box;
+  border-radius: 1.5em;
+  overflow: clip;
+  background: linear-gradient(
+    var(--angle-2),
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.5) 40% 50%,
+    rgba(255, 255, 255, 0) 55%
+  );
+  z-index: 3;
+  mix-blend-mode: screen;
+  pointer-events: none;
+  background-size: 200% 200%;
+  background-position: 0% 50%;
+  background-repeat: no-repeat;
+  transition: background-position calc(var(--panel-anim-time) * 1.25)
+      var(--panel-hover-ease),
+    --angle-2 calc(var(--panel-anim-time) * 1.25) var(--panel-hover-ease);
+}
+
+.chat-panel:hover .chat-panel-content::after {
+  background-position: 25% 50%;
+}
+
+.chat-panel::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  border-radius: 1.5em;
+  width: calc(100% + var(--border-width));
+  height: calc(100% + var(--border-width));
+  top: calc(0% - var(--border-width) / 2);
+  left: calc(0% - var(--border-width) / 2);
+  padding: var(--border-width);
+  box-sizing: border-box;
+  background: conic-gradient(
+      from var(--angle-1) at 50% 50%,
+      rgba(0, 0, 0, 0.5),
+      rgba(0, 0, 0, 0) 5% 40%,
+      rgba(0, 0, 0, 0.5) 50%,
+      rgba(0, 0, 0, 0) 60% 95%,
+      rgba(0, 0, 0, 0.5)
+    ),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5));
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  transition: all var(--panel-anim-time) var(--panel-hover-ease),
+    --angle-1 500ms ease;
+  box-shadow: inset 0 0 0 calc(var(--border-width) / 2) rgba(255, 255, 255, 0.5);
+}
+
+.chat-panel:hover::after {
+  --angle-1: -125deg;
+}
+
+.chat-panel-wrap:hover .chat-panel-shadow {
+  filter: blur(clamp(2px, 0.1em, 10px));
+  -webkit-filter: blur(clamp(2px, 0.1em, 10px));
+  -moz-filter: blur(clamp(2px, 0.1em, 10px));
+  -ms-filter: blur(clamp(2px, 0.1em, 10px));
+}
+
+.chat-panel-wrap:hover .chat-panel-shadow::after {
+  top: calc(var(--shadow-cuttoff-fix) - 0.875em);
+  opacity: 1;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .chat-panel-content::after,
+  .chat-panel:hover .chat-panel-content::after {
+    --angle-2: -45deg;
+  }
+  .chat-panel::after,
+  .chat-panel:hover::after {
+    --angle-1: -75deg;
+  }
+}
+
+
