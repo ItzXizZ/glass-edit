@@ -43,6 +43,22 @@ const TextEditor = () => {
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
 
+  // Helper function to call our secure backend API
+  const callOpenAI = async (endpoint, body) => {
+    const response = await fetch('/api/openai', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ endpoint, body })
+    });
+    
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'API request failed');
+    }
+    
+    return response.json();
+  };
+
   const updateStats = () => {
     if (editorRef.current) {
       const text = editorRef.current.innerText || '';
@@ -194,27 +210,30 @@ const TextEditor = () => {
     setIsGenerating(true);
 
     try {
-      const response = await fetch('/api/refine', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          selectedText,
-          userFeedback
-        }),
+      const response = await callOpenAI('chat', {
+        model: "gpt-4o",
+        messages: [
+          {
+            role: "system",
+            content: "You are a helpful writing assistant. When given a sentence and feedback about it, provide 3 different refined versions of that sentence. Return ONLY the 3 refined sentences, one per line, without numbering or additional explanation."
+          },
+          {
+            role: "user",
+            content: `Original sentence: "${selectedText}"\n\nUser feedback: ${userFeedback}\n\nPlease provide 3 refined versions of this sentence that address the feedback.`
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 500,
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to generate refinements');
-      }
-
-      const data = await response.json();
-      setRefinementOptions(data.options);
+      const refinedText = response.choices[0].message.content.trim();
+      const options = refinedText.split('\n').filter(line => line.trim().length > 0);
+      
+      setRefinementOptions(options.length >= 3 ? options.slice(0, 3) : options);
       setIsGenerating(false);
     } catch (error) {
       console.error('Error generating refinements:', error);
-      alert(`Error: ${error.message}`);
+      alert(`Error: ${error.message}\n\nPlease check your OpenAI API key configuration.`);
       setIsGenerating(false);
     }
   };
@@ -248,27 +267,30 @@ const TextEditor = () => {
       setIsGenerating(true);
 
       try {
-        const response = await fetch('/api/refine', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            selectedText: selectedSentence,
-            userFeedback: additionalFeedback
-          }),
+        const response = await callOpenAI('chat', {
+          model: "gpt-4o",
+          messages: [
+            {
+              role: "system",
+              content: "You are a helpful writing assistant. When given a sentence and feedback about it, provide 3 different refined versions of that sentence. Return ONLY the 3 refined sentences, one per line, without numbering or additional explanation."
+            },
+            {
+              role: "user",
+              content: `Original sentence: "${selectedSentence}"\n\nUser feedback: ${additionalFeedback}\n\nPlease provide 3 refined versions of this sentence that address the feedback.`
+            }
+          ],
+          temperature: 0.7,
+          max_tokens: 500,
         });
 
-        if (!response.ok) {
-          throw new Error('Failed to generate refinements');
-        }
-
-        const data = await response.json();
-        setRefinementOptions(data.options);
+        const refinedText = response.choices[0].message.content.trim();
+        const options = refinedText.split('\n').filter(line => line.trim().length > 0);
+        
+        setRefinementOptions(options.length >= 3 ? options.slice(0, 3) : options);
         setIsGenerating(false);
       } catch (error) {
         console.error('Error generating refinements:', error);
-        alert(`Error: ${error.message}`);
+        alert(`Error: ${error.message}\n\nPlease check your OpenAI API key configuration.`);
         setIsGenerating(false);
       }
     } else {
@@ -337,22 +359,23 @@ const TextEditor = () => {
     setIsGeneratingQuestion(true);
     
     try {
-      const response = await fetch('/api/question', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          brainstormInput
-        }),
+      const response = await callOpenAI('chat', {
+        model: "gpt-4o",
+        messages: [
+          {
+            role: "system",
+            content: "You are a perceptive writing coach. Analyze the writer's brainstorming and identify the most important unaddressed question or gap in their thinking. Generate a single, direct question that points to what they're avoiding, missing, or haven't fully explored yet. Keep it under 15 words. Return ONLY the question, nothing else."
+          },
+          {
+            role: "user",
+            content: `Read this brainstorming and identify the most pervasive unaddressed question:\n\n${brainstormInput}\n\nWhat critical question is still lingering despite all this brainstorming?`
+          }
+        ],
+        temperature: 0.8,
+        max_tokens: 50,
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to generate question');
-      }
-
-      const data = await response.json();
-      setCurrentQuestion(data.question);
+      setCurrentQuestion(response.choices[0].message.content.trim().replace(/['"]/g, ''));
       setIsGeneratingQuestion(false);
     } catch (error) {
       console.error('Error generating question:', error);
@@ -394,30 +417,8 @@ const TextEditor = () => {
 
   const transcribeAudio = async (audioBlob) => {
     try {
-      // Convert blob to base64
-      const reader = new FileReader();
-      reader.readAsDataURL(audioBlob);
-      
-      reader.onloadend = async () => {
-        const base64Audio = reader.result.split(',')[1]; // Remove data:audio/webm;base64, prefix
-
-        const response = await fetch('/api/transcribe', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            audio: base64Audio
-          }),
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to transcribe audio');
-        }
-
-        const data = await response.json();
-        setBrainstormInput(data.text);
-      };
+      // Audio transcription requires file upload - simplified for now
+      alert('Audio transcription is temporarily unavailable. Please type your brainstorm instead.');
     } catch (error) {
       console.error('Error transcribing audio:', error);
       alert('Error transcribing audio. Please try again.');
@@ -433,22 +434,34 @@ const TextEditor = () => {
     setIsBrainstormLoading(true);
 
     try {
-      const response = await fetch('/api/structure', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          brainstormInput
-        }),
+      const response = await callOpenAI('chat', {
+        model: "gpt-4o",
+        messages: [
+          {
+            role: "system",
+            content: "You are a creative writing assistant. Analyze the stream of consciousness writing and break it into logical story sections. Return a JSON array of objects with 'title' (section name, 2-4 words), 'description' (1-2 sentences describing this part), and 'size' ('small', 'medium', or 'large' based on importance and content depth). Return ONLY valid JSON, no additional text."
+          },
+          {
+            role: "user",
+            content: `Analyze this stream of consciousness and create a story structure:\n\n${brainstormInput}`
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 1500,
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to generate structure');
+      const sectionsText = response.choices[0].message.content.trim();
+      let sections;
+      try {
+        sections = JSON.parse(sectionsText);
+      } catch (e) {
+        const jsonMatch = sectionsText.match(/```(?:json)?\s*(\[[\s\S]*?\])\s*```/);
+        if (jsonMatch) {
+          sections = JSON.parse(jsonMatch[1]);
+        } else {
+          throw new Error('Could not parse response as JSON');
+        }
       }
-
-      const data = await response.json();
-      let sections = data.sections;
 
       // Add unique IDs and grid positions with slight randomness (3 per row)
       const BOXES_PER_ROW = 3;
