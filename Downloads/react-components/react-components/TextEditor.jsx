@@ -750,6 +750,17 @@ const TextEditor = () => {
     }
   }, []);
 
+  // Restore editor content when switching back from brainstorm mode
+  useEffect(() => {
+    if (!brainstormMode && editorRef.current && content) {
+      // Only restore if the editor is empty (just switched back)
+      if (!editorRef.current.innerHTML || editorRef.current.innerHTML.trim() === '') {
+        editorRef.current.innerHTML = content;
+        updateStats();
+      }
+    }
+  }, [brainstormMode]);
+
   // Regenerate question when brainstorm input changes
   useEffect(() => {
     if (brainstormMode && brainstormPhase === 'input') {
