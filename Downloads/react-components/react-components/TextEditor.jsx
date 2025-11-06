@@ -1,6 +1,4 @@
 import React, { useState, useRef, useEffect } from 'react';
-import OpenAI from 'openai';
-import { OPENAI_API_KEY } from '../config.js';
 import './Button.css';
 import './Input.css';
 import './TextEditor.css';
@@ -44,18 +42,6 @@ const TextEditor = () => {
   const refinementPanelRef = useRef(null);
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
-
-  // Initialize OpenAI client
-  const openaiClient = useRef(null);
-  
-  useEffect(() => {
-    if (OPENAI_API_KEY && OPENAI_API_KEY !== 'your_openai_api_key_here') {
-      openaiClient.current = new OpenAI({
-        apiKey: OPENAI_API_KEY,
-        dangerouslyAllowBrowser: true // Note: In production, use a backend proxy
-      });
-    }
-  }, []);
 
   const updateStats = () => {
     if (editorRef.current) {
@@ -208,34 +194,27 @@ const TextEditor = () => {
     setIsGenerating(true);
 
     try {
-      if (!openaiClient.current) {
-        throw new Error('OpenAI API key not configured. Please add your API key to the config.js file.');
-      }
-
-      const response = await openaiClient.current.chat.completions.create({
-        model: "gpt-4o",
-        messages: [
-          {
-            role: "system",
-            content: "You are a helpful writing assistant. When given a sentence and feedback about it, provide 3 different refined versions of that sentence. Return ONLY the 3 refined sentences, one per line, without numbering or additional explanation."
-          },
-          {
-            role: "user",
-            content: `Original sentence: "${selectedText}"\n\nUser feedback: ${userFeedback}\n\nPlease provide 3 refined versions of this sentence that address the feedback.`
-          }
-        ],
-        temperature: 0.7,
-        max_tokens: 500,
+      const response = await fetch('/api/refine', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          selectedText,
+          userFeedback
+        }),
       });
 
-      const refinedText = response.choices[0].message.content.trim();
-      const options = refinedText.split('\n').filter(line => line.trim().length > 0);
-      
-      setRefinementOptions(options.length >= 3 ? options.slice(0, 3) : options);
+      if (!response.ok) {
+        throw new Error('Failed to generate refinements');
+      }
+
+      const data = await response.json();
+      setRefinementOptions(data.options);
       setIsGenerating(false);
     } catch (error) {
       console.error('Error generating refinements:', error);
-      alert(`Error: ${error.message}\n\nPlease check your OpenAI API key in the config.js file.`);
+      alert(`Error: ${error.message}`);
       setIsGenerating(false);
     }
   };
@@ -269,34 +248,27 @@ const TextEditor = () => {
       setIsGenerating(true);
 
       try {
-        if (!openaiClient.current) {
-          throw new Error('OpenAI API key not configured. Please add your API key to the config.js file.');
-        }
-
-        const response = await openaiClient.current.chat.completions.create({
-          model: "gpt-4o",
-          messages: [
-            {
-              role: "system",
-              content: "You are a helpful writing assistant. When given a sentence and feedback about it, provide 3 different refined versions of that sentence. Return ONLY the 3 refined sentences, one per line, without numbering or additional explanation."
-            },
-            {
-              role: "user",
-              content: `Original sentence: "${selectedSentence}"\n\nUser feedback: ${additionalFeedback}\n\nPlease provide 3 refined versions of this sentence that address the feedback.`
-            }
-          ],
-          temperature: 0.7,
-          max_tokens: 500,
+        const response = await fetch('/api/refine', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            selectedText: selectedSentence,
+            userFeedback: additionalFeedback
+          }),
         });
 
-        const refinedText = response.choices[0].message.content.trim();
-        const options = refinedText.split('\n').filter(line => line.trim().length > 0);
-        
-        setRefinementOptions(options.length >= 3 ? options.slice(0, 3) : options);
+        if (!response.ok) {
+          throw new Error('Failed to generate refinements');
+        }
+
+        const data = await response.json();
+        setRefinementOptions(data.options);
         setIsGenerating(false);
       } catch (error) {
         console.error('Error generating refinements:', error);
-        alert(`Error: ${error.message}\n\nPlease check your OpenAI API key in the config.js file.`);
+        alert(`Error: ${error.message}`);
         setIsGenerating(false);
       }
     } else {
@@ -365,29 +337,22 @@ const TextEditor = () => {
     setIsGeneratingQuestion(true);
     
     try {
-      if (!openaiClient.current) {
-        setCurrentQuestion('What are you still not addressing?');
-        setIsGeneratingQuestion(false);
-        return;
-      }
-
-      const response = await openaiClient.current.chat.completions.create({
-        model: "gpt-4o",
-        messages: [
-          {
-            role: "system",
-            content: "You are a perceptive writing coach. Analyze the writer's brainstorming and identify the most important unaddressed question or gap in their thinking. Generate a single, direct question that points to what they're avoiding, missing, or haven't fully explored yet. Keep it under 15 words. Return ONLY the question, nothing else."
-          },
-          {
-            role: "user",
-            content: `Read this brainstorming and identify the most pervasive unaddressed question:\n\n${brainstormInput}\n\nWhat critical question is still lingering despite all this brainstorming?`
-          }
-        ],
-        temperature: 0.8,
-        max_tokens: 50,
+      const response = await fetch('/api/question', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          brainstormInput
+        }),
       });
 
-      setCurrentQuestion(response.choices[0].message.content.trim().replace(/['"]/g, ''));
+      if (!response.ok) {
+        throw new Error('Failed to generate question');
+      }
+
+      const data = await response.json();
+      setCurrentQuestion(data.question);
       setIsGeneratingQuestion(false);
     } catch (error) {
       console.error('Error generating question:', error);
@@ -429,19 +394,30 @@ const TextEditor = () => {
 
   const transcribeAudio = async (audioBlob) => {
     try {
-      if (!openaiClient.current) {
-        throw new Error('OpenAI API key not configured.');
-      }
+      // Convert blob to base64
+      const reader = new FileReader();
+      reader.readAsDataURL(audioBlob);
+      
+      reader.onloadend = async () => {
+        const base64Audio = reader.result.split(',')[1]; // Remove data:audio/webm;base64, prefix
 
-      // Convert blob to file
-      const audioFile = new File([audioBlob], 'recording.webm', { type: 'audio/webm' });
+        const response = await fetch('/api/transcribe', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            audio: base64Audio
+          }),
+        });
 
-      const response = await openaiClient.current.audio.transcriptions.create({
-        file: audioFile,
-        model: 'whisper-1',
-      });
+        if (!response.ok) {
+          throw new Error('Failed to transcribe audio');
+        }
 
-      setBrainstormInput(response.text);
+        const data = await response.json();
+        setBrainstormInput(data.text);
+      };
     } catch (error) {
       console.error('Error transcribing audio:', error);
       alert('Error transcribing audio. Please try again.');
@@ -457,38 +433,22 @@ const TextEditor = () => {
     setIsBrainstormLoading(true);
 
     try {
-      if (!openaiClient.current) {
-        throw new Error('OpenAI API key not configured.');
-      }
-
-      const response = await openaiClient.current.chat.completions.create({
-        model: "gpt-4o",
-        messages: [
-          {
-            role: "system",
-            content: "You are a creative writing assistant. Analyze the stream of consciousness writing and break it into logical story sections. Return a JSON array of objects with 'title' (section name, 2-4 words), 'description' (1-2 sentences describing this part), and 'size' ('small', 'medium', or 'large' based on importance and content depth). Return ONLY valid JSON, no additional text."
-          },
-          {
-            role: "user",
-            content: `Analyze this stream of consciousness and create a story structure:\n\n${brainstormInput}`
-          }
-        ],
-        temperature: 0.7,
-        max_tokens: 1500,
+      const response = await fetch('/api/structure', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          brainstormInput
+        }),
       });
 
-      const sectionsText = response.choices[0].message.content.trim();
-      let sections;
-      try {
-        sections = JSON.parse(sectionsText);
-      } catch (e) {
-        const jsonMatch = sectionsText.match(/```(?:json)?\s*(\[[\s\S]*?\])\s*```/);
-        if (jsonMatch) {
-          sections = JSON.parse(jsonMatch[1]);
-        } else {
-          throw new Error('Could not parse response as JSON');
-        }
+      if (!response.ok) {
+        throw new Error('Failed to generate structure');
       }
+
+      const data = await response.json();
+      let sections = data.sections;
 
       // Add unique IDs and grid positions with slight randomness (3 per row)
       const BOXES_PER_ROW = 3;

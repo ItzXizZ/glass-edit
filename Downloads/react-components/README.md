@@ -55,19 +55,22 @@ vercel
 4. Vercel will automatically detect Vite and configure the build settings
 5. Add your OpenAI API key as an environment variable:
    - Go to Project Settings → Environment Variables
-   - Add: `VITE_OPENAI_API_KEY` with your API key
+   - Add: `OPENAI_API_KEY` with your API key
 
 ### Environment Variables
 
 For the AI features to work, you need to set up an OpenAI API key:
 
 1. Get your API key from [OpenAI Platform](https://platform.openai.com/api-keys)
-2. Create a `.env.local` file in the root directory:
+2. For **local development**, create a `.env` file in the root directory:
 ```
-VITE_OPENAI_API_KEY=your_api_key_here
+OPENAI_API_KEY=your_api_key_here
 ```
+3. For **Vercel deployment**, add the environment variable in your project settings:
+   - Go to Project Settings → Environment Variables
+   - Add: `OPENAI_API_KEY` (without VITE_ prefix) with your API key
 
-**Important:** Never commit your `.env.local` file or expose your API key publicly.
+**Important:** Never commit your `.env` file or expose your API key publicly. The API key is now securely handled by serverless functions.
 
 ## Project Structure
 
