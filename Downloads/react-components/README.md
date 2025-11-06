@@ -19,9 +19,20 @@ A beautiful collection of glassmorphic UI components built with React, featuring
 # Install dependencies
 npm install
 
-# Start development server
+# Start development server (with serverless functions)
 npm run dev
+
+# This will:
+# - Run Vite dev server for the React app
+# - Run Vercel serverless functions locally
+# - Make API endpoints available at /api/*
+# - Automatically open your browser at http://localhost:3000
 ```
+
+**Important for First Run:**
+- The first time you run `npm run dev`, Vercel CLI may ask you to log in
+- You can run it without logging in by pressing "Continue without login"
+- Make sure your `.env` file has `OPENAI_API_KEY=your_key_here`
 
 ### Build for Production
 
