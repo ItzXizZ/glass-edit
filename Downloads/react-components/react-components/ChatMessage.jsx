@@ -30,3 +30,4 @@ const ChatMessage = ({ message, sender = 'user', timestamp, avatar, isAnimating 
 export default ChatMessage;
 
 
+
